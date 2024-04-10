@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>REACT</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+const { useState } = React; 
+const styles = {
+    li:{
+        display: 'flex',
+        justifyContent: 'flex-start',
+        background: 'white',
+        boxShadow: '2px 4px 10px rgba(0,0,0,0.2)',
+        color: '#707070',
+        marginBottom: '1em',
+        cursor: 'pointer',
+        padding: "0.5em",
+        borderRadius: '8px', 
+        maxWidth: '450px',
+        marginLeft: 'auto',
+        marginRight: 'auto'
+    },
+    leftWall: color => ({
+        width: '0.5em',
+        backgroundColor: color
+    }),
+    wrapper:{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        padding: "1em"
+    },
+    name:{
+        fontSize: "2em"
+    },
+    description: {
+        marginTop: "1em",
+        fontSize: "1em"
+    },
+    bttnClick:{
+        display: "inline-block",
+        cursor: "pointer",
+        borderRadius: "8px",
+        padding: "12px 20px 14px",
+        fontSize: "11px",
+        background: "transparent",
+        color: "#000000",
+        boxShadow: "0 0 0 3px"
+    }
+};
+
+function Clock(props){
+    const [date,dateSetter] = React.useState(new Date());
+    
+    React.useEffect(() => {
+        const interval = setInterval(() => {dateSetter(new Date())}, 1000);
+        return() => {clearInterval(interval);}
+    })
+
+    return (<div><h2>{date.toLocaleTimeString()}</h2></div> );
+}
+
+function Counter(props){
+    const [count, setCount] = React.useState(0);
+
+    React.useEffect(() => {
+        const storedCount = localStorage.getItem("pageVisits");
+        const initialCount = Number(storedCount) || 0;
+        setCount(initialCount + 1);
+        localStorage.setItem("pageVisits" ,initialCount + 1);
+    }, []);
+
+    return <div><h3>Times visited: {count}</h3></div>;
+}
+
+const ListBody = ({name, description, dueDate}) => (
+    <div style = {styles.wrapper}>
+        <span style = {styles.name}>{name}</span>
+        <span style = {styles.description}>{description}</span>
+        <span><p>Due: {dueDate}</p></span>
+    </div>
+)
+
+class ListItem extends React.PureComponent{
+    render(){
+        return(
+            <li style = {styles.li} onClick = {() => this.props.handleOnClick(this.props.id)}>
+                <div style = {styles.leftWall(this.props.completed ? "green" : "red")}/>
+                <ListBody name = {this.props.name} description = {this.props.description} dueDate = {this.props.dueDate}/>
+            </li>
+        )
+    }
+}
+
+class Assignments extends React.Component{
+    constructor(props){
+        super(props);
+
+        this.state = {
+            assignmentsToDo:[
+                {
+                    id: 1,
+                    name: 'CS.3320: REACT assignment',
+                    description: 'Finish the assignment',
+                    dueDate: '04/11/2024',
+                    completed: true
+                },
+                {
+                    id: 2,
+                    name: 'CS.4332: Project 7',
+                    description: 'Start building the project',
+                    dueDate: '04/09/2024',
+                    completed: true
+                },
+                {
+                    id: 3,
+                    name: 'CS.4371: Lab 4: Hill Cipher',
+                    description: 'Start working on the lab',
+                    dueDate: '04/11/2024',
+                    completed: false
+                },
+                {
+                    id: 4,
+                    name: 'CS.4371: Quiz 4: Encryption',
+                    description: 'Start on quiz',
+                    dueDate: '04/11/2024',
+                    completed: false
+                }
+            ]
+        }
+    }
+
+    handleOnClick = id => {
+        this.setState(prevState => ({
+            assignmentsToDo: prevState.assignmentsToDo.map(assignment =>
+                assignment.id === id ? { ...assignment, completed: !assignment.completed } : assignment
+            )
+        }));
+    };
+
+    render(){
+        const {assignmentsToDo} = this.state;
+        return (
+            <div style = {{textAlign: 'center'}}>
+                <ul>
+                    {assignmentsToDo.map(assignment => (
+                        <ListItem
+                            key = {assignment.id}
+                            id = {assignment.id}
+                            name = {assignment.name}
+                            description = {assignment.description}
+                            dueDate = {assignment.dueDate}
+                            completed = {assignment.completed}
+                            handleOnClick = {this.handleOnClick}
+                        />
+                    ))}
+                </ul>
+            </div>
+        )
+    }
+}
+
+class CounterButton extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {count: 0};
+    }
+
+    render(){
+        return(
+        <>
+        <button onClick = {() => this.setState({count: this.state.count + 1})} style = {styles.bttnClick}>Click Me to go UP</button>
+        <button onClick = {() => this.setState({count: this.state.count - 1})} style = {styles.bttnClick}>Click Me to go DOWN</button>
+        <button onClick = {() => this.setState({count: Math.floor(Math.random() * (100 - 1 + 1) + 1)})} style = {styles.bttnClick}>Random</button>
+        <h1>Clicked {this.state.count} times</h1>
+        </>
+        );
+    }
+}
+
+function App() { 
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div>
+                    <Clock/>
+                </div>
+                <h1 style={{flex: '1', textAlign: 'center'}}>Assignment Tracker</h1>
+                <div>
+                    <Counter/>
+                </div>
+            </div>
+            <hr/>
+            <div style = {{alignItems: "center"}}>
+                <Assignments/>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+                <hr/>
+                <div style={{ display: 'inline-block' }}>
+                    <CounterButton/>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
